@@ -15,7 +15,6 @@ class ShowsViewSet(viewsets.ModelViewSet):
     def trending(self, request):
         tmdb_api = TmdbApi()
         trending_shows = tmdb_api.get_all_trending_shows()
-        print(trending_shows)
         serializer = self.get_serializer(data=trending_shows)
         try:
             serializer.is_valid(raise_exception=True)
