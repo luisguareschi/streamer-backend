@@ -11,6 +11,11 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 from datetime import timedelta
 from pathlib import Path
+import os
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -44,7 +49,8 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_simplejwt',
     'drf_spectacular',
-    "users.apps.UsersConfig"
+    "users.apps.UsersConfig",
+    'shows.apps.ShowsConfig'
 ]
 
 MIDDLEWARE = [
@@ -168,6 +174,9 @@ SPECTACULAR_SETTINGS = {
  'VERSION': '1.0.0',
  'SERVE_INCLUDE_SCHEMA': False,
 }
+
+TMDB_API_KEY = os.getenv("TMDB_API_KEY", "")
+TMDB_READ_ACCESS_TOKEN = os.getenv("TMDB_READ_ACCESS_TOKEN", "")
 
 
 
