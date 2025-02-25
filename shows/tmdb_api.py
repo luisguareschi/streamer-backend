@@ -24,8 +24,8 @@ class TmdbApi:
     def get_trending_movies(self):
         return self.get("/trending/movie/day")
     
-    def get_all_trending_shows(self):
-        response = self.get("/trending/all/day")
+    def get_all_trending_shows(self, time_window: str = "day"):
+        response = self.get(f"/trending/all/{time_window}")
         for show in response["results"]:
             show["poster_path"] = f"{self.base_image_url}{show['poster_path']}"
             show["backdrop_path"] = f"{self.base_image_url}{show['backdrop_path']}"
@@ -50,6 +50,14 @@ class TmdbApi:
                 result["poster_path"] = f"{self.base_image_url}{result['poster_path']}"
                 result["backdrop_path"] = f"{self.base_image_url}{result['backdrop_path']}"
         response["results"] = [result for result in response["results"] if result.get("media_type") in ["tv", "movie"] and (result.get("poster_path") or result.get("backdrop_path"))]
+        return response
+    
+    def get_popular_shows(self, media_type: str = "tv"):
+        response = self.get(f"/{media_type}/popular")
+        for show in response["results"]:
+            show["poster_path"] = f"{self.base_image_url}{show['poster_path']}"
+            show["backdrop_path"] = f"{self.base_image_url}{show['backdrop_path']}"
+            show["media_type"] = media_type
         return response
 
 if __name__ == "__main__":

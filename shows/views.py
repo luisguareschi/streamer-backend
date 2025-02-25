@@ -13,10 +13,16 @@ class ShowsViewSet(viewsets.ModelViewSet):
     authentication_classes = []
     queryset = None
     
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name="time_window", description="Time window", required=False, type=str, default="day", enum=["day", "week"])
+        ]
+    )
     @action(detail=False, methods=["GET"], serializer_class=TrendingShowsResponseSerializer)
     def trending(self, request):
+        time_window = request.query_params.get("time_window", "day")
         tmdb_api = TmdbApi()
-        trending_shows = tmdb_api.get_all_trending_shows()
+        trending_shows = tmdb_api.get_all_trending_shows(time_window=time_window)
         serializer = self.get_serializer(data=trending_shows)
         try:
             serializer.is_valid(raise_exception=True)
@@ -64,3 +70,21 @@ class ShowsViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response(search_results)
         return Response(serializer.data)
+    
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name="media_type", description="Media type", required=False, type=str, default="tv", enum=["tv", "movie"])
+        ]
+    )
+    @action(detail=False, methods=["GET"], serializer_class=TrendingShowsResponseSerializer)
+    def popular(self, request):
+        media_type = request.query_params.get("media_type", "tv")
+        tmdb_api = TmdbApi()
+        popular_shows = tmdb_api.get_popular_shows(media_type=media_type)
+        serializer = self.get_serializer(data=popular_shows)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(popular_shows)
+        return Response(serializer.data)
+
