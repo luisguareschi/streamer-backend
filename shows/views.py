@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from shows.tmdb_api import TmdbApi
-from shows.serializers import TrendingShowsResponseSerializer, MovieDetailSerializer, TvDetailSerializer
+from shows.serializers import TrendingShowsResponseSerializer, MovieDetailSerializer, TvDetailSerializer, TvEpisodesResponseSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -87,4 +87,26 @@ class ShowsViewSet(viewsets.ModelViewSet):
         except Exception as e:
             return Response(popular_shows)
         return Response(serializer.data)
+    
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name="tv_id", description="TV ID", required=True, type=int),
+            OpenApiParameter(name="season_number", description="Season number", required=True, type=int)
+        ]
+    )
+    @action(detail=False, methods=["GET"], serializer_class=TvEpisodesResponseSerializer)
+    def get_tv_episodes(self, request):
+        tv_id = request.query_params.get("tv_id", None)
+        season_number = request.query_params.get("season_number", None)
+        if not tv_id or not season_number:
+            return Response({"error": "tv_id and season_number are required"}, status=status.HTTP_400_BAD_REQUEST)
+        tmdb_api = TmdbApi()
+        episodes = tmdb_api.get_tv_show_episodes(tv_id, season_number)
+        serializer = self.get_serializer(data=episodes)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(episodes)
+        return Response(serializer.data)
+
 

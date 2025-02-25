@@ -59,6 +59,10 @@ class TmdbApi:
             show["backdrop_path"] = f"{self.base_image_url}{show['backdrop_path']}"
             show["media_type"] = media_type
         return response
+    
+    def get_tv_show_episodes(self, tv_show_id, season_number):
+        response = self.get(f"/tv/{tv_show_id}/season/{season_number}")
+        return response
 
 if __name__ == "__main__":
     tmdb_api = TmdbApi()

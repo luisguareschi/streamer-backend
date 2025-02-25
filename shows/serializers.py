@@ -97,3 +97,32 @@ class TvDetailSerializer(serializers.Serializer):
     type = serializers.CharField()
     vote_average = serializers.FloatField()
     vote_count = serializers.IntegerField()
+
+class TvEpisodeSerializer(serializers.Serializer):
+    air_date = serializers.DateField()
+    episode_number = serializers.IntegerField()
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    overview = serializers.CharField()
+    production_code = serializers.CharField()
+    runtime = serializers.IntegerField()
+    season_number = serializers.IntegerField()
+    show_id = serializers.IntegerField()
+    still_path = serializers.CharField(allow_null=True)
+    vote_average = serializers.FloatField()
+    vote_count = serializers.IntegerField()
+    crew = serializers.ListField(child=serializers.DictField())
+    guest_stars = serializers.ListField(child=serializers.DictField())
+
+
+class TvEpisodesResponseSerializer(serializers.Serializer):
+    _id = serializers.CharField()
+    air_date = serializers.DateField()
+    episodes = TvEpisodeSerializer(many=True)
+    name = serializers.CharField()
+    overview = serializers.CharField()
+    id = serializers.IntegerField()
+    poster_path = serializers.CharField(allow_null=True)
+    season_number = serializers.IntegerField()
+    vote_average = serializers.FloatField()
+    
