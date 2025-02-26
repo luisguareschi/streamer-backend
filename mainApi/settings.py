@@ -93,7 +93,7 @@ WSGI_APPLICATION = 'mainApi.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
-if DEVELOPMENT_MODE is True:
+if DEVELOPMENT_MODE is True or os.getenv("DATABASE_URL", None) is None:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.sqlite3",
