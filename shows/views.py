@@ -119,3 +119,14 @@ class ShowWatchProgressViewSet(viewsets.ModelViewSet):
         if self.request.user.is_authenticated:
             return ShowWatchProgress.objects.filter(user=self.request.user)
         return ShowWatchProgress.objects.all()
+
+    @action(detail=False, methods=["GET"], serializer_class=ShowWatchProgressSerializer, url_path="progress/(?P<tmdb_id>\d+)")
+    def get_show_watch_progress(self, request, tmdb_id):
+        user = request.user
+        if not user.is_authenticated:
+            return Response({"error": "User is not authenticated"}, status=status.HTTP_401_UNAUTHORIZED)
+        show_watch_progress = ShowWatchProgress.objects.filter(user=user, tmdb_id=tmdb_id).first()
+        if not show_watch_progress:
+            return Response(None, status=status.HTTP_200_OK)
+        serializer = self.get_serializer(show_watch_progress)
+        return Response(serializer.data)
