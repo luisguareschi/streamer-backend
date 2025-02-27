@@ -116,9 +116,10 @@ class ShowWatchProgressViewSet(viewsets.ModelViewSet):
     serializer_class = ShowWatchProgressSerializer
 
     def get_queryset(self):
+        query = ShowWatchProgress.objects.all().order_by('-updated_at')
         if self.request.user.is_authenticated:
-            return ShowWatchProgress.objects.filter(user=self.request.user)
-        return ShowWatchProgress.objects.all()
+            return query.filter(user=self.request.user)
+        return query
 
     @action(detail=False, methods=["GET"], serializer_class=ShowWatchProgressSerializer, url_path="progress/(?P<tmdb_id>\d+)")
     def get_show_watch_progress(self, request, tmdb_id):

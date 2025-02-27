@@ -15,5 +15,6 @@ class ShowWatchProgressAdmin(admin.ModelAdmin):
     list_display = ('user', 'title', 'tmdb_id', 'media_type')
     list_filter = ('media_type',)
     search_fields = ('user__username', 'title', 'tmdb_id')
+    readonly_fields = ('created_at', 'updated_at')
     inlines = [TvProgressInline, MovieProgressInline]
 

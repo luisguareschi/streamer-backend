@@ -148,8 +148,10 @@ class ShowWatchProgressSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ShowWatchProgress
-        fields = ['id', 'user', 'media_type', 'tmdb_id', 'poster_path', 'backdrop_path', 'title', 'created_at', 'tv_progress', 'movie_progress', 'last_watched_episode']
-        read_only_fields = ['id', 'created_at', 'last_watched_episode', 'user']
+        fields = [
+            'id', 'user', 'media_type', 'tmdb_id', 'poster_path', 'backdrop_path', 'title', 'created_at', 'updated_at', 'tv_progress', 'movie_progress', 'last_watched_episode'
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'last_watched_episode', 'user']
 
     def create(self, validated_data):
         # get user from request
