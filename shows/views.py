@@ -1,16 +1,17 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from shows.tmdb_api import TmdbApi
-from shows.serializers import TrendingShowsResponseSerializer, MovieDetailSerializer, TvDetailSerializer, TvEpisodesResponseSerializer
+from shows.serializers import ShowWatchProgressSerializer, TrendingShowsResponseSerializer, MovieDetailSerializer, TvDetailSerializer, TvEpisodesResponseSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import status
+from shows.models import ShowWatchProgress, MovieProgress, TvProgress
 # Create your views here.
 
 class ShowsViewSet(viewsets.ModelViewSet):
-    authentication_classes = []
+    permission_classes = []
     queryset = None
     
     @extend_schema(
@@ -110,3 +111,11 @@ class ShowsViewSet(viewsets.ModelViewSet):
         return Response(serializer.data)
 
 
+class ShowWatchProgressViewSet(viewsets.ModelViewSet):
+    permission_classes = []
+    serializer_class = ShowWatchProgressSerializer
+
+    def get_queryset(self):
+        if self.request.user.is_authenticated:
+            return ShowWatchProgress.objects.filter(user=self.request.user)
+        return ShowWatchProgress.objects.all()

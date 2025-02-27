@@ -1,5 +1,7 @@
 from rest_framework import serializers
 
+from shows.models import MovieProgress, ShowWatchProgress, TvProgress
+
 
 class TrendingShowSerializer(serializers.Serializer):
     # Common fields for both movies and TV shows
@@ -125,4 +127,70 @@ class TvEpisodesResponseSerializer(serializers.Serializer):
     poster_path = serializers.CharField(allow_null=True)
     season_number = serializers.IntegerField()
     vote_average = serializers.FloatField()
-    
+
+
+class TvProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TvProgress
+        fields = ['id', 'season', 'episode', 'watched_seconds', 'total_seconds']
+        read_only_fields = ['id']
+
+class MovieProgressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MovieProgress
+        fields = ['id', 'watched_seconds', 'total_seconds']
+        read_only_fields = ['id']
+
+class ShowWatchProgressSerializer(serializers.ModelSerializer):
+    tv_progress = TvProgressSerializer(many=True, allow_null=True)
+    movie_progress = MovieProgressSerializer(many=True, allow_null=True)
+    last_watched_episode = TvProgressSerializer(allow_null=True, read_only=True)
+
+    class Meta:
+        model = ShowWatchProgress
+        fields = ['id', 'user', 'media_type', 'tmdb_id', 'poster_path', 'backdrop_path', 'title', 'created_at', 'tv_progress', 'movie_progress', 'last_watched_episode']
+        read_only_fields = ['id', 'created_at', 'last_watched_episode', 'user']
+
+    def create(self, validated_data):
+        # get user from request
+        user = self.context['request'].user
+        validated_data['user'] = user
+
+
+        tv_progress_data = validated_data.pop('tv_progress', None)
+        movie_progress_data = validated_data.pop('movie_progress', None)
+
+        # create show watch progress or update it if it already exists
+        show_watch_progress, created = ShowWatchProgress.objects.get_or_create(
+            user=user, media_type=validated_data['media_type'], tmdb_id=validated_data['tmdb_id']
+        )
+        show_watch_progress.poster_path = validated_data['poster_path']
+        show_watch_progress.backdrop_path = validated_data['backdrop_path']
+        show_watch_progress.title = validated_data['title']
+        show_watch_progress.save()
+
+        if tv_progress_data:
+            for tv_progress in tv_progress_data:
+                # remove id from tv_progress if it exists
+                tv_progress.pop('id', None)
+                # add show_watch_progress to tv_progress
+                tv_progress['show_watch_progress'] = show_watch_progress
+                # create tv progress or update it if it already exists
+                new_tv_progress, created = TvProgress.objects.get_or_create(show_watch_progress=show_watch_progress, season=tv_progress['season'], episode=tv_progress['episode'])
+                new_tv_progress: TvProgress = new_tv_progress
+                new_tv_progress.watched_seconds = tv_progress['watched_seconds']
+                new_tv_progress.total_seconds = tv_progress['total_seconds']
+                new_tv_progress.save()
+        if movie_progress_data:
+            for movie_progress in movie_progress_data:
+                # remove id from movie_progress if it exists
+                movie_progress.pop('id', None)
+                # add show_watch_progress to movie_progress
+                movie_progress['show_watch_progress'] = show_watch_progress
+                # create movie progress or update it if it already exists
+                new_movie_progress, created = MovieProgress.objects.get_or_create(show_watch_progress=show_watch_progress)
+                new_movie_progress: MovieProgress = new_movie_progress
+                new_movie_progress.watched_seconds = movie_progress['watched_seconds']
+                new_movie_progress.total_seconds = movie_progress['total_seconds']
+                new_movie_progress.save()
+        return show_watch_progress
