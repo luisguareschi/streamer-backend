@@ -24,12 +24,14 @@ class ShowWatchProgress(models.Model):
     def last_watched_episode(self):
         if self.media_type == 'movie':
             return None
-        return self.tv_progress.order_by('-season', '-episode').first()
+        return self.tv_progress.order_by('-updated_at').first()
     
 class MovieProgress(models.Model):
     show_watch_progress = models.ForeignKey(ShowWatchProgress, on_delete=models.CASCADE, related_name='movie_progress')
     watched_seconds = models.FloatField(default=0)
     total_seconds = models.FloatField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('show_watch_progress',)
@@ -45,6 +47,8 @@ class TvProgress(models.Model):
     total_seconds = models.FloatField(default=0)
     season = models.IntegerField(default=0)
     episode = models.IntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
         unique_together = ('show_watch_progress', 'season', 'episode')
