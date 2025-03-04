@@ -149,7 +149,7 @@ class ShowWatchProgressSerializer(serializers.ModelSerializer):
     class Meta:
         model = ShowWatchProgress
         fields = [
-            'id', 'user', 'media_type', 'tmdb_id', 'poster_path', 'backdrop_path', 'title', 'created_at', 'updated_at', 'tv_progress', 'movie_progress', 'last_watched_episode'
+            'id', 'user', 'media_type', 'tmdb_id', 'poster_path', 'backdrop_path', 'title', 'created_at', 'updated_at', 'tv_progress', 'movie_progress', 'last_watched_episode', 'archived'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at', 'last_watched_episode', 'user']
 
@@ -196,3 +196,12 @@ class ShowWatchProgressSerializer(serializers.ModelSerializer):
                 new_movie_progress.total_seconds = movie_progress['total_seconds']
                 new_movie_progress.save()
         return show_watch_progress
+
+
+class ArchiveShowSerializer(serializers.Serializer):
+    tmdb_id = serializers.IntegerField(required=True)
+
+    def validate(self, attrs):
+        if not attrs['tmdb_id']:
+            raise serializers.ValidationError("tmdb_id is required")
+        return attrs

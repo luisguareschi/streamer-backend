@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from shows.tmdb_api import TmdbApi
-from shows.serializers import ShowWatchProgressSerializer, TrendingShowsResponseSerializer, MovieDetailSerializer, TvDetailSerializer, TvEpisodesResponseSerializer
+from shows.serializers import ArchiveShowSerializer, ShowWatchProgressSerializer, TrendingShowsResponseSerializer, MovieDetailSerializer, TvDetailSerializer, TvEpisodesResponseSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -11,7 +11,7 @@ from shows.models import ShowWatchProgress, MovieProgress, TvProgress
 # Create your views here.
 
 class ShowsViewSet(viewsets.ModelViewSet):
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     queryset = None
     
     @extend_schema(
@@ -112,11 +112,11 @@ class ShowsViewSet(viewsets.ModelViewSet):
 
 
 class ShowWatchProgressViewSet(viewsets.ModelViewSet):
-    permission_classes = []
+    permission_classes = [IsAuthenticated]
     serializer_class = ShowWatchProgressSerializer
 
     def get_queryset(self):
-        query = ShowWatchProgress.objects.all().order_by('-updated_at')
+        query = ShowWatchProgress.objects.filter(archived=False).order_by('-updated_at')
         if self.request.user.is_authenticated:
             return query.filter(user=self.request.user)
         return query
@@ -131,3 +131,25 @@ class ShowWatchProgressViewSet(viewsets.ModelViewSet):
             return Response(None, status=status.HTTP_200_OK)
         serializer = self.get_serializer(show_watch_progress)
         return Response(serializer.data)
+    
+    @extend_schema(
+        responses={
+            200: ShowWatchProgressSerializer,
+        }
+    )
+    @action(detail=False, methods=["POST"], serializer_class=ArchiveShowSerializer)
+    def archive_show(self, request):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user
+        show_watch_progress = ShowWatchProgress.objects.filter(user=user, tmdb_id=serializer.data["tmdb_id"]).first()
+        if not show_watch_progress:
+            return Response({"error": "Show watch progress not found"}, status=status.HTTP_404_NOT_FOUND)
+        show_watch_progress.archived = True
+        response = show_watch_progress.save()
+        serializer = self.get_serializer(response)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+

@@ -13,6 +13,7 @@ class ShowWatchProgress(models.Model):
     title = models.CharField(max_length=255, null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    archived = models.BooleanField(default=False, null=False, blank=False)
 
     def __str__(self):
         return f"{self.user.username} - {self.title} ({self.tmdb_id})"
