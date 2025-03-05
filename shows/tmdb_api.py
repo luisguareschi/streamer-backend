@@ -28,7 +28,7 @@ class TmdbApi:
         response = self.get(f"/trending/all/{time_window}")
         for show in response["results"]:
             show["poster_path"] = f"{self.base_image_url}{show['poster_path']}"
-            show["backdrop_path"] = f"{self.base_image_url}{show['backdrop_path']}"
+            show["backdrop_path"] = f"{self.base_original_image_url}{show['backdrop_path']}"
         return response
 
     def get_movie_details(self, movie_id: int):
