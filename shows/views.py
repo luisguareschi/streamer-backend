@@ -11,7 +11,7 @@ from shows.models import ShowWatchProgress, MovieProgress, TvProgress, Watchlist
 # Create your views here.
 
 class ShowsViewSet(viewsets.ModelViewSet):
-    permission_classes = [IsAuthenticated]
+    permission_classes = []
     queryset = None
     
     @extend_schema(
