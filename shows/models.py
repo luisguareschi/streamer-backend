@@ -57,3 +57,21 @@ class TvProgress(models.Model):
     def __str__(self):
         return f"{self.show_watch_progress.user.username} - {self.show_watch_progress.title} ({self.show_watch_progress.tmdb_id}) - S{self.season}E{self.episode}"
     
+
+class Watchlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=False, blank=False)
+    media_type = models.CharField(max_length=10, choices=[('tv', 'tv'), ('movie', 'movie')], null=False, blank=False)
+    tmdb_id = models.IntegerField(null=False, blank=False)
+    poster_path = models.CharField(max_length=255, null=False, blank=False)
+    backdrop_path = models.CharField(max_length=255, null=False, blank=False)
+    title = models.CharField(max_length=255, null=False, blank=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('user', 'media_type', 'tmdb_id')
+
+    def __str__(self):
+        return f"{self.user.username} - {self.title} ({self.tmdb_id})"
+    
+    

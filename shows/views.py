@@ -1,13 +1,13 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from shows.tmdb_api import TmdbApi
-from shows.serializers import ArchiveShowSerializer, ShowWatchProgressSerializer, TrendingShowsResponseSerializer, MovieDetailSerializer, TvDetailSerializer, TvEpisodesResponseSerializer
+from shows.serializers import ArchiveShowSerializer, IsInWatchlistResponseSerializer, IsInWatchlistSerializer, ShowWatchProgressSerializer, TrendingShowsResponseSerializer, MovieDetailSerializer, TvDetailSerializer, TvEpisodesResponseSerializer, WatchlistSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import status
-from shows.models import ShowWatchProgress, MovieProgress, TvProgress
+from shows.models import ShowWatchProgress, MovieProgress, TvProgress, Watchlist
 # Create your views here.
 
 class ShowsViewSet(viewsets.ModelViewSet):
@@ -153,3 +153,32 @@ class ShowWatchProgressViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(response)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
+
+class WatchlistViewSet(viewsets.ModelViewSet):
+    permission_classes = [IsAuthenticated]
+    serializer_class = WatchlistSerializer
+    
+
+    def get_queryset(self):
+        return Watchlist.objects.filter(user=self.request.user)
+    
+    @extend_schema(
+        responses={
+            200: IsInWatchlistResponseSerializer,
+        }
+    )
+    @action(detail=False, methods=["POST"], serializer_class=IsInWatchlistSerializer)
+    def is_in_watchlist(self, request):
+        serializer = self.get_serializer(data=request.data)
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        user = request.user
+        watchlist = Watchlist.objects.filter(user=user, tmdb_id=serializer.data["tmdb_id"]).first()
+        serializer = IsInWatchlistResponseSerializer(data={"is_in_watchlist": watchlist is not None})
+        try:
+            serializer.is_valid(raise_exception=True)
+        except Exception as e:
+            return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)

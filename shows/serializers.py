@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from shows.models import MovieProgress, ShowWatchProgress, TvProgress
+from shows.models import MovieProgress, ShowWatchProgress, TvProgress, Watchlist
 
 
 class TrendingShowSerializer(serializers.Serializer):
@@ -205,3 +205,33 @@ class ArchiveShowSerializer(serializers.Serializer):
         if not attrs['tmdb_id']:
             raise serializers.ValidationError("tmdb_id is required")
         return attrs
+
+
+class WatchlistSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Watchlist
+        fields = "__all__"
+        read_only_fields = ['id', 'created_at', 'updated_at', 'user']
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        validated_data['user'] = user
+
+        # check if the show is already in the watchlist
+        watchlist = Watchlist.objects.filter(user=user, tmdb_id=validated_data['tmdb_id']).first()
+        if watchlist:
+            watchlist.delete()
+            return watchlist
+
+        return super().create(validated_data)    
+
+class IsInWatchlistSerializer(serializers.Serializer):
+    tmdb_id = serializers.IntegerField(required=True)
+
+    def validate(self, attrs):
+        if not attrs['tmdb_id']:
+            raise serializers.ValidationError("tmdb_id is required")
+        return attrs
+
+class IsInWatchlistResponseSerializer(serializers.Serializer):
+    is_in_watchlist = serializers.BooleanField()
