@@ -1,6 +1,7 @@
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
 import time
 
 def scrape_video_source(url: str) -> str | None:
@@ -10,18 +11,25 @@ def scrape_video_source(url: str) -> str | None:
     driver = webdriver.Chrome(options=options)
     driver.get(url)
     timer = 10 # Maximum time to wait for the video tag to load
+    video_tag = None
     while timer > 0:
         time.sleep(1)
         timer -= 1
-        video_tag = driver.find_element(By.TAG_NAME, "video")
+        try:
+             video_tag = driver.find_element(By.TAG_NAME, "video")
+        except NoSuchElementException:
+             video_tag = None
+             continue
         if video_tag:
-            break
+                break
     if not video_tag:
         return None
-    src_tag = video_tag.find_element(By.TAG_NAME, "source")
-    if not src_tag:
+    try:
+        src_tag = video_tag.find_element(By.TAG_NAME, "source")
+        return src_tag.get_attribute("src")
+    except NoSuchElementException:
         return None
-    return src_tag.get_attribute("src")
+
 
 
 def get_watch_url(tmdb_id: int, media_type: str, season_number: int | None = None, episode_number: int | None = None) -> str | None:
@@ -37,7 +45,7 @@ def get_watch_url(tmdb_id: int, media_type: str, season_number: int | None = Non
 
 if __name__ == "__main__":
     # https://streamer-app.netlify.app/watch?mediaType=tv&id=95396&season=2&episode=8
-    watch_url = get_watch_url(tmdb_id=95396, media_type="tv", season_number=2, episode_number=8)
+    watch_url = get_watch_url(tmdb_id=107028, media_type="tv", season_number=1, episode_number=2)
     print("watch_url", watch_url)
 
     
