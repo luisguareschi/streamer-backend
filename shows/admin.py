@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import ShowWatchProgress, MovieProgress, TvProgress, Watchlist
+from .models import ShowWatchProgress, MovieProgress, TvProgress, WatchUrl, Watchlist
 # Register your models here.
 
 class TvProgressInline(admin.TabularInline):
@@ -25,4 +25,12 @@ class WatchlistAdmin(admin.ModelAdmin):
     list_filter = ('media_type',)
     search_fields = ('user__username', 'title', 'tmdb_id')
     readonly_fields = ('created_at', 'updated_at')
+
+
+@admin.register(WatchUrl)
+class WatchUrlAdmin(admin.ModelAdmin):
+    list_display = ('title', 'tmdb_id', 'media_type', 'season', 'episode', 'created_at', 'updated_at')
+    list_filter = ('media_type',)
+    search_fields = ('tmdb_id', 'title')
+    readonly_fields = ('created_at', 'updated_at', 'url', 'poster_path', 'backdrop_path', 'season', 'episode', 'tmdb_id', 'media_type', 'title')
 

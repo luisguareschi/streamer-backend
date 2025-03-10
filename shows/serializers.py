@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from shows.models import MovieProgress, ShowWatchProgress, TvProgress, Watchlist
+from shows.models import MovieProgress, ShowWatchProgress, TvProgress, WatchUrl, Watchlist
 
 
 class TrendingShowSerializer(serializers.Serializer):
@@ -235,3 +235,10 @@ class IsInWatchlistSerializer(serializers.Serializer):
 
 class IsInWatchlistResponseSerializer(serializers.Serializer):
     is_in_watchlist = serializers.BooleanField()
+
+class WatchUrlSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WatchUrl
+        fields = "__all__"
+        read_only_fields = ['id', 'created_at', 'updated_at']
+

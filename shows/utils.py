@@ -1,0 +1,43 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.common.by import By
+import time
+
+def scrape_video_source(url: str) -> str | None:
+    options = Options()
+    options.add_argument("--headless")
+    options.add_argument("--disable-gpu")
+    driver = webdriver.Chrome(options=options)
+    driver.get(url)
+    timer = 10 # Maximum time to wait for the video tag to load
+    while timer > 0:
+        time.sleep(1)
+        timer -= 1
+        video_tag = driver.find_element(By.TAG_NAME, "video")
+        if video_tag:
+            break
+    if not video_tag:
+        return None
+    src_tag = video_tag.find_element(By.TAG_NAME, "source")
+    if not src_tag:
+        return None
+    return src_tag.get_attribute("src")
+
+
+def get_watch_url(tmdb_id: int, media_type: str, season_number: int | None = None, episode_number: int | None = None) -> str | None:
+    vid_link_url: str | None = None
+    if media_type == "movie":
+        vid_link_url = f"https://vidlink.pro/movie/{tmdb_id}"
+    else:
+        vid_link_url = f"https://vidlink.pro/tv/{tmdb_id}/{season_number}/{episode_number}"
+
+    video_url = scrape_video_source(vid_link_url)
+
+    return video_url
+
+if __name__ == "__main__":
+    # https://streamer-app.netlify.app/watch?mediaType=tv&id=95396&season=2&episode=8
+    watch_url = get_watch_url(tmdb_id=95396, media_type="tv", season_number=2, episode_number=8)
+    print("watch_url", watch_url)
+
+    
