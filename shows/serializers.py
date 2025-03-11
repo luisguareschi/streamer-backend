@@ -237,8 +237,12 @@ class IsInWatchlistResponseSerializer(serializers.Serializer):
     is_in_watchlist = serializers.BooleanField()
 
 class WatchUrlSerializer(serializers.ModelSerializer):
+    get_subtitles = serializers.SerializerMethodField()
     class Meta:
         model = WatchUrl
         fields = "__all__"
-        read_only_fields = ['id', 'created_at', 'updated_at']
+        read_only_fields = ['id', 'created_at', 'updated_at', 'en_subtitle', 'es_subtitle']
 
+    def get_subtitles(self, obj: WatchUrl):
+        obj.download_subtitles()
+        

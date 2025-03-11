@@ -190,5 +190,9 @@ SPECTACULAR_SETTINGS = {
 TMDB_API_KEY = os.getenv("TMDB_API_KEY", "")
 TMDB_READ_ACCESS_TOKEN = os.getenv("TMDB_READ_ACCESS_TOKEN", "")
 
+# Add or update these settings
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
 
 

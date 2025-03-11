@@ -33,4 +33,10 @@ class WatchUrlAdmin(admin.ModelAdmin):
     list_filter = ('media_type',)
     search_fields = ('tmdb_id', 'title')
     readonly_fields = ('created_at', 'updated_at', 'url', 'poster_path', 'backdrop_path', 'season', 'episode', 'tmdb_id', 'media_type', 'title')
+    actions = ['download_subtitles']
+
+    def download_subtitles(self, request, queryset):
+        for watch_url in queryset:
+            watch_url: WatchUrl = watch_url
+            watch_url.download_subtitles()
 

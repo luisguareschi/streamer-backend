@@ -1,6 +1,8 @@
 from django.db import models
+from shows.subtitles_api import SubtitlesAPI
 from shows.tmdb_api import TmdbApi
 from users.models import User
+from django.core.files.base import ContentFile
 # Create your models here.
 
 
@@ -87,6 +89,8 @@ class WatchUrl(models.Model):
     title = models.CharField(max_length=255, null=False, blank=False)
     season = models.IntegerField(null=True, blank=True)
     episode = models.IntegerField(null=True, blank=True)
+    en_subtitle = models.FileField(upload_to='subtitles/', null=True, blank=True)
+    es_subtitle = models.FileField(upload_to='subtitles/', null=True, blank=True)
 
     def populate_details(self):
         tmdb_api = TmdbApi()
@@ -101,6 +105,33 @@ class WatchUrl(models.Model):
             self.backdrop_path = result['backdrop_path']
             self.title = result['name'] if self.media_type == 'tv' else result['title']
             self.save()
+    
+    def download_subtitles(self):
+        if self.en_subtitle and self.es_subtitle:
+            return
+
+        subtitles_api = SubtitlesAPI()
+        file_name_en = ""
+        file_name_es = ""
+        en_subtitle = None
+        es_subtitle = None
+
+        if self.media_type == 'tv':
+            file_name_en = f"{self.title}S{self.season}E{self.episode}-en.srt"
+            file_name_es = f"{self.title}S{self.season}E{self.episode}-es.srt"
+            en_subtitle = subtitles_api.download_subtitle(tmdb_id=self.tmdb_id, season_number=self.season, episode_number=self.episode, language="en")
+            es_subtitle = subtitles_api.download_subtitle(tmdb_id=self.tmdb_id, season_number=self.season, episode_number=self.episode, language="es")
+        else:
+            file_name_en = f"{self.title}-en.srt"
+            file_name_es = f"{self.title}-es.srt"
+            en_subtitle = subtitles_api.download_subtitle(tmdb_id=self.tmdb_id, language="en")
+            es_subtitle = subtitles_api.download_subtitle(tmdb_id=self.tmdb_id, language="es")
+
+        if en_subtitle:
+            self.en_subtitle = ContentFile(en_subtitle, name=file_name_en)
+        if es_subtitle:
+            self.es_subtitle = ContentFile(es_subtitle, name=file_name_es)
+        self.save()
 
 
     class Meta:
