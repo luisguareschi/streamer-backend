@@ -237,12 +237,44 @@ class IsInWatchlistResponseSerializer(serializers.Serializer):
     is_in_watchlist = serializers.BooleanField()
 
 class WatchUrlSerializer(serializers.ModelSerializer):
-    get_subtitles = serializers.SerializerMethodField()
+    en_subtitle = serializers.SerializerMethodField()
+    es_subtitle = serializers.SerializerMethodField()
+
     class Meta:
         model = WatchUrl
-        fields = "__all__"
-        read_only_fields = ['id', 'created_at', 'updated_at', 'en_subtitle', 'es_subtitle']
+        fields = [
+            'id',
+            'tmdb_id',
+            'media_type',
+            'url',
+            'created_at',
+            'updated_at',
+            'poster_path',
+            'backdrop_path',
+            'title',
+            'season',
+            'episode',
+            'en_subtitle',
+            'es_subtitle',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'en_subtitle', 'es_subtitle',]
 
-    def get_subtitles(self, obj: WatchUrl):
-        obj.download_subtitles()
-        
+    def get_en_subtitle(self, obj: WatchUrl):
+        if not obj.en_subtitle:
+            obj.download_subtitles()
+        if not obj.en_subtitle:
+            return None
+        request = self.context.get('request', None)
+        if request is not None:
+            return request.build_absolute_uri(obj.en_subtitle.url)
+        return None
+
+    def get_es_subtitle(self, obj: WatchUrl):
+        if not obj.es_subtitle:
+            obj.download_subtitles()
+        if not obj.es_subtitle:
+            return None
+        request = self.context.get('request', None)
+        if request is not None:
+            return request.build_absolute_uri(obj.es_subtitle.url)
+        return None

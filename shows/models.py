@@ -117,13 +117,13 @@ class WatchUrl(models.Model):
         es_subtitle = None
 
         if self.media_type == 'tv':
-            file_name_en = f"{self.title}S{self.season}E{self.episode}-en.srt"
-            file_name_es = f"{self.title}S{self.season}E{self.episode}-es.srt"
+            file_name_en = f"{self.title}S{self.season}E{self.episode}-en.vtt"
+            file_name_es = f"{self.title}S{self.season}E{self.episode}-es.vtt"
             en_subtitle = subtitles_api.download_subtitle(tmdb_id=self.tmdb_id, season_number=self.season, episode_number=self.episode, language="en")
             es_subtitle = subtitles_api.download_subtitle(tmdb_id=self.tmdb_id, season_number=self.season, episode_number=self.episode, language="es")
         else:
-            file_name_en = f"{self.title}-en.srt"
-            file_name_es = f"{self.title}-es.srt"
+            file_name_en = f"{self.title}-en.vtt"
+            file_name_es = f"{self.title}-es.vtt"
             en_subtitle = subtitles_api.download_subtitle(tmdb_id=self.tmdb_id, language="en")
             es_subtitle = subtitles_api.download_subtitle(tmdb_id=self.tmdb_id, language="es")
 
