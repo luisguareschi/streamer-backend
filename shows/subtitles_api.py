@@ -1,6 +1,7 @@
 from opensubtitlescom import OpenSubtitles
 from opensubtitlescom.responses import Subtitle
 import re
+from mainApi.settings import OPEN_SUBTITLES_API_KEY, OPEN_SUBTITLES_USERNAME, OPEN_SUBTITLES_PASSWORD
 
 def srt_to_vtt(srt_text: str) -> str:
     """
@@ -22,9 +23,9 @@ def srt_to_vtt(srt_text: str) -> str:
 
 class SubtitlesAPI:
     def __init__(self):
-        self.api_key = "mQ4ngZOXRRPrRt3o9N2k0hBoLtGOkEle"
-        self.username = "luisguareschi"
-        self.password = "luis2012"
+        self.api_key = OPEN_SUBTITLES_API_KEY
+        self.username = OPEN_SUBTITLES_USERNAME
+        self.password = OPEN_SUBTITLES_PASSWORD
         self.client = OpenSubtitles("MyApp v1.0.0", self.api_key)
         self.client.login(username=self.username, password=self.password)
 
