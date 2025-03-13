@@ -1,52 +1,51 @@
 import time
-from playwright.sync_api import sync_playwright
+from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.common.by import By
 
 def scrape_video_source(url: str) -> str | None:
-    with sync_playwright() as p:
-        browser = p.firefox.launch(
-            headless=True,
-            args=[
-                '--disable-gpu',
-                '--disable-dev-shm-usage',
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-            ]
-        )
-        page = browser.new_page()
-        
-        # Navigate to the URL
-        page.goto(url)
-        
-        # Wait for video element with timeout
-        video_tag = None
-        max_attempts = 10 # Timeout in seconds to wait for video element
-        for _ in range(max_attempts):
-            try:
-                # Check if video element exists
-                video_tag = page.query_selector("video")
-                if video_tag:
-                    break
-            except:
-                pass
-            time.sleep(1)
-        
-        # If no video tag found after all attempts
-        if not video_tag:
-            browser.close()
-            return None
-        
-        # Try to find source tag and get src attribute
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--no-sandbox")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--disable-gpu")
+    
+    # Set up Selenium with Chrome
+    service = Service(ChromeDriverManager().install())
+    driver = webdriver.Chrome(service=service, options=chrome_options)
+    
+    driver.get(url)
+
+    # Wait for the video element
+    max_attempts = 10
+    video_tag = None
+    for _ in range(max_attempts):
         try:
-            src_tag = video_tag.query_selector("source")
-            if src_tag:
-                src_url = src_tag.get_attribute("src")
-                browser.close()
-                return src_url
+            video_tag = driver.find_element(By.TAG_NAME, "video")
+            if video_tag:
+                break
         except:
             pass
-        
-        browser.close()
+        time.sleep(1)
+    
+    if not video_tag:
+        driver.quit()
         return None
+
+    # Try to find the source URL
+    try:
+        src_tag = video_tag.find_element(By.TAG_NAME, "source")
+        if src_tag:
+            src_url = src_tag.get_attribute("src")
+            driver.quit()
+            return src_url
+    except:
+        pass
+
+    driver.quit()
+    return None
 
 def get_watch_url(tmdb_id: int, media_type: str, season_number: int | None = None, episode_number: int | None = None) -> str | None:
     vid_link_url: str | None = None
