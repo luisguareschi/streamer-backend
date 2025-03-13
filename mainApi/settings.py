@@ -16,6 +16,7 @@ from dotenv import load_dotenv
 from django.core.management.utils import get_random_secret_key
 import sys
 import dj_database_url
+import sentry_sdk
 
 # Load environment variables
 load_dotenv()
@@ -197,4 +198,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 OPEN_SUBTITLES_API_KEY = os.getenv("OPEN_SUBTITLES_API_KEY", "")
 OPEN_SUBTITLES_USERNAME = os.getenv("OPEN_SUBTITLES_USERNAME", "")
 OPEN_SUBTITLES_PASSWORD = os.getenv("OPEN_SUBTITLES_PASSWORD", "")
+
+sentry_sdk.init(
+    dsn="https://20e22dd23aa07e735c666b03c61b4a30@o4508969898344448.ingest.de.sentry.io/4508969899589712",
+    # Add data like request headers and IP for users,
+    # see https://docs.sentry.io/platforms/python/data-management/data-collected/ for more info
+    send_default_pii=True,
+)
 
