@@ -206,3 +206,7 @@ sentry_sdk.init(
     send_default_pii=True,
 )
 
+CSRF_TRUSTED_ORIGINS = [
+    'https://*',  # Allow any HTTPS origin
+    'http://*',   # Allow any HTTP origin
+]
