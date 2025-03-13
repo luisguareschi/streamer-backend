@@ -1,6 +1,6 @@
 from rest_framework import serializers
 
-from shows.models import MovieProgress, ShowWatchProgress, TvProgress, Watchlist
+from shows.models import MovieProgress, ShowWatchProgress, TvProgress, WatchUrl, Watchlist
 
 
 class TrendingShowSerializer(serializers.Serializer):
@@ -235,3 +235,46 @@ class IsInWatchlistSerializer(serializers.Serializer):
 
 class IsInWatchlistResponseSerializer(serializers.Serializer):
     is_in_watchlist = serializers.BooleanField()
+
+class WatchUrlSerializer(serializers.ModelSerializer):
+    en_subtitle = serializers.SerializerMethodField()
+    es_subtitle = serializers.SerializerMethodField()
+
+    class Meta:
+        model = WatchUrl
+        fields = [
+            'id',
+            'tmdb_id',
+            'media_type',
+            'url',
+            'created_at',
+            'updated_at',
+            'poster_path',
+            'backdrop_path',
+            'title',
+            'season',
+            'episode',
+            'en_subtitle',
+            'es_subtitle',
+        ]
+        read_only_fields = ['id', 'created_at', 'updated_at', 'en_subtitle', 'es_subtitle',]
+
+    def get_en_subtitle(self, obj: WatchUrl):
+        if not obj.en_subtitle:
+            obj.download_subtitles()
+        if not obj.en_subtitle:
+            return None
+        request = self.context.get('request', None)
+        if request is not None:
+            return request.build_absolute_uri(obj.en_subtitle.url)
+        return None
+
+    def get_es_subtitle(self, obj: WatchUrl):
+        if not obj.es_subtitle:
+            obj.download_subtitles()
+        if not obj.es_subtitle:
+            return None
+        request = self.context.get('request', None)
+        if request is not None:
+            return request.build_absolute_uri(obj.es_subtitle.url)
+        return None

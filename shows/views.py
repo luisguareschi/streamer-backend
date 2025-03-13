@@ -1,13 +1,14 @@
 from django.shortcuts import render
 from rest_framework import viewsets
 from shows.tmdb_api import TmdbApi
-from shows.serializers import ArchiveShowSerializer, IsInWatchlistResponseSerializer, IsInWatchlistSerializer, ShowWatchProgressSerializer, TrendingShowsResponseSerializer, MovieDetailSerializer, TvDetailSerializer, TvEpisodesResponseSerializer, WatchlistSerializer
+from shows.serializers import ArchiveShowSerializer, IsInWatchlistResponseSerializer, IsInWatchlistSerializer, ShowWatchProgressSerializer, TrendingShowsResponseSerializer, MovieDetailSerializer, TvDetailSerializer, TvEpisodesResponseSerializer, WatchUrlSerializer, WatchlistSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import status
-from shows.models import ShowWatchProgress, MovieProgress, TvProgress, Watchlist
+from shows.models import ShowWatchProgress, MovieProgress, TvProgress, WatchUrl, Watchlist
+from shows.utils import get_watch_url
 # Create your views here.
 
 class ShowsViewSet(viewsets.ModelViewSet):
@@ -181,4 +182,50 @@ class WatchlistViewSet(viewsets.ModelViewSet):
             serializer.is_valid(raise_exception=True)
         except Exception as e:
             return Response(serializer.data, status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    
+
+class WatchUrlViewSet(viewsets.GenericViewSet):
+    permission_classes = []
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name="tmdb_id", description="TMDB ID", required=True, type=int),
+            OpenApiParameter(name="media_type", description="Media type", required=True, type=str, default="tv", enum=["tv", "movie"]),
+            OpenApiParameter(name="season_number", description="Season number", required=False, type=int),
+            OpenApiParameter(name="episode_number", description="Episode number", required=False, type=int),
+        ],
+    )
+    @action(detail=False, methods=["GET"], serializer_class=WatchUrlSerializer)
+    def get_watch_url(self, request):
+        tmdb_id = request.query_params.get("tmdb_id", None)
+        media_type = request.query_params.get("media_type", None)
+        season_number = request.query_params.get("season_number", None)
+        episode_number = request.query_params.get("episode_number", None)
+        if not tmdb_id or not media_type:
+            return Response({"error": "tmdb_id and media_type are required"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        if media_type == "tv" and (not season_number or not episode_number):
+            return Response({"error": "season_number and episode_number are required for TV shows"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        watch_url = None
+        if media_type == "tv":
+            watch_url = WatchUrl.objects.filter(tmdb_id=tmdb_id, media_type=media_type, season=season_number, episode=episode_number).first()
+        elif media_type == "movie":
+            watch_url = WatchUrl.objects.filter(tmdb_id=tmdb_id, media_type=media_type).first()
+        
+        if not watch_url:
+            video_url = get_watch_url(tmdb_id=tmdb_id, media_type=media_type, season_number=season_number, episode_number=episode_number)
+            if not video_url:
+                return Response({"error": "Could not find video url"}, status=status.HTTP_404_NOT_FOUND)
+            watch_url = WatchUrl.objects.create(
+                tmdb_id=tmdb_id,
+                media_type=media_type,
+                url=video_url,
+                season=season_number,
+                episode=episode_number
+            )
+            watch_url.populate_details()
+
+        serializer = self.get_serializer(watch_url)
         return Response(serializer.data, status=status.HTTP_200_OK)

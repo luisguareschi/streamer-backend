@@ -22,6 +22,8 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from auth.views import EmailTokenObtainPairView, UserRegistrationView
 from users.urls import urlpatterns as user_urls
 from shows.urls import shows_urls
+from django.conf.urls.static import static
+from django.conf import settings
 
 api_urlpatterns = [
     path('auth/login/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'),
@@ -38,4 +40,4 @@ api_urlpatterns = [
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('api/', include((api_urlpatterns, 'api'), namespace='api')),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
