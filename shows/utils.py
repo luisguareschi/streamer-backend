@@ -8,6 +8,9 @@ def scrape_video_source(url: str) -> str | None:
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--disable-gpu")
+    options.add_argument('--disable-dev-shm-usage')
+    options.add_argument('--no-sandbox')  # DigitalOcean App Platform requires this
+    options.add_argument('--remote-debugging-port=9222')
     driver = webdriver.Chrome(options=options)
     driver.get(url)
     timer = 10 # Maximum time to wait for the video tag to load
