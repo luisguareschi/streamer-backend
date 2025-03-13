@@ -206,4 +206,7 @@ sentry_sdk.init(
     send_default_pii=True,
 )
 
-CSRF_TRUSTED_ORIGINS = ['*']
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ondigitalocean.app',
+    'https://*.digitaloceanspaces.com',
+]
