@@ -3,7 +3,7 @@ version: '3.8'
 services:
   streamer-backend:
     build:
-      context: ./streamer-backend
+      context: .
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
@@ -13,7 +13,7 @@ services:
       # Add any other environment variables your application needs
       # - DATABASE_URL=postgres://user:password@db:5432/dbname
     volumes:
-      - ./streamer-backend:/app
+      - .:/app
     # If you need a database, uncomment the following lines
     # depends_on:
     #   - db
