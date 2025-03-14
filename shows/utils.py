@@ -2,6 +2,7 @@ import time
 from playwright.sync_api import sync_playwright
 
 def scrape_video_source(url: str) -> str | None:
+    # start playwright
     with sync_playwright() as p:
         browser = p.firefox.launch(
             headless=True,
