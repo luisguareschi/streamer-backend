@@ -81,7 +81,7 @@ class Watchlist(models.Model):
 class WatchUrl(models.Model):
     tmdb_id = models.IntegerField(null=False, blank=False)
     media_type = models.CharField(max_length=10, choices=[('tv', 'tv'), ('movie', 'movie')], null=False, blank=False)
-    url = models.CharField(max_length=255, null=False, blank=False)
+    url = models.TextField(null=False, blank=False)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     poster_path = models.CharField(max_length=255, null=False, blank=False)
