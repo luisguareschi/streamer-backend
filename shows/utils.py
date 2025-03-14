@@ -9,6 +9,9 @@ def scrape_video_source(url: str) -> str | None:
                 '--disable-gpu',
                 '--disable-dev-shm-usage',
                 '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-web-security',
+                '--disable-features=IsolateOrigins,site-per-process',
             ]
         )
         page = browser.new_page()
