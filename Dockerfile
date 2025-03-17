@@ -57,11 +57,9 @@ COPY . .
 # Collect static files
 RUN python manage.py collectstatic --noinput
 
-# Apply database migrations
-RUN python manage.py migrate
 
 # Expose port
 EXPOSE 8000
 
-# Start gunicorn
-CMD gunicorn mainApi.wsgi:application --bind 0.0.0.0:$PORT
+# Apply database migrations and start gunicorn
+CMD python manage.py migrate && gunicorn mainApi.wsgi:application --bind 0.0.0.0:$PORT
