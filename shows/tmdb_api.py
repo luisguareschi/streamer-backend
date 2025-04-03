@@ -27,8 +27,11 @@ class TmdbApi:
     def get_all_trending_shows(self, time_window: str = "day"):
         response = self.get(f"/trending/all/{time_window}")
         for show in response["results"]:
+            if "poster_path" not in show or "backdrop_path" not in show:
+                continue
             show["poster_path"] = f"{self.base_image_url}{show['poster_path']}"
             show["backdrop_path"] = f"{self.base_original_image_url}{show['backdrop_path']}"
+        response["results"] = [show for show in response["results"] if show.get("media_type", "") in ["tv", "movie"]]
         return response
 
     def get_movie_details(self, movie_id: int):
